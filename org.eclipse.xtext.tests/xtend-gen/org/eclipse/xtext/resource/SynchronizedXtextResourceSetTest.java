@@ -37,8 +37,7 @@ public class SynchronizedXtextResourceSetTest extends AbstractXtextResourceSetTe
   @Test
   public void testSynchronization() {
     try {
-      XtextResourceSet _createEmptyResourceSet = this.createEmptyResourceSet();
-      final SynchronizedXtextResourceSet resourceSet = ((SynchronizedXtextResourceSet) _createEmptyResourceSet);
+      final XtextResourceSet resourceSet = this.createEmptyResourceSet();
       final Resource.Factory _function = (URI uri) -> {
         NullResource _xblockexpression = null;
         {

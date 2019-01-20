@@ -47,10 +47,16 @@ import com.google.common.collect.Lists;
  */
 public class ConcurrentAccessTest extends Assert {
 
+	private static final int RESOURCES = 1000;
+	
+	private static final int EXPECTATION = RESOURCES + 1;
+
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();
 	
 	private Resource resource;
+	
+	private ThreadPools pools;
 
 	private GlobalStateMemento globalStateMemento;
 
@@ -67,14 +73,14 @@ public class ConcurrentAccessTest extends Assert {
 		resourceSet.getResources().add(resource);
 		EPackage start = EcoreFactory.eINSTANCE.createEPackage();
 		resource.getContents().add(start);
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < RESOURCES; i++) {
 			File tempFile = temporaryFolder.createTempFile("Package" + i, ".ecore");
 			URI fileURI = URI.createFileURI(tempFile.getAbsolutePath());
 			Resource toBeProxified = resourceSet.createResource(fileURI);
 			EPackage ePackage = EcoreFactory.eINSTANCE.createEPackage();
 			ePackage.setNsURI("http://www.test.me/" + i);
 			toBeProxified.getContents().add(ePackage);
-			for (int j = 0; j < 100; j++) {
+			for (int j = 0; j < RESOURCES; j++) {
 				EAnnotation annotation = EcoreFactory.eINSTANCE.createEAnnotation();
 				annotation.setSource("Source" + j);
 				start.getEAnnotations().add(annotation);
@@ -86,23 +92,26 @@ public class ConcurrentAccessTest extends Assert {
 			toBeProxified.save(null);
 		}
 		EcoreUtil.resolveAll(resourceSet);
-		for (int i = 100; i >= 1; i--) {
+		for (int i = RESOURCES; i >= 1; i--) {
 			Resource toBeProxified = resourceSet.getResources().get(i);
 			toBeProxified.unload();
 			resourceSet.getResources().remove(toBeProxified);
 		}
+		pools = new ThreadPools();
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		resource = null;
+		pools.stop();
+		pools = null;
 		globalStateMemento.restoreGlobalState();
 	}
 	
 	@Test public void testDummy() {
 		assertEquals(1, resource.getResourceSet().getResources().size());
 		EcoreUtil.resolveAll(resource);
-		assertEquals(101, resource.getResourceSet().getResources().size());
+		assertEquals(EXPECTATION, resource.getResourceSet().getResources().size());
 	}
 	
 	@Test public void testResolveSingleThreaded() {
@@ -111,7 +120,7 @@ public class ConcurrentAccessTest extends Assert {
 		assertEquals(1, resourceSet.getResources().size());
 		EPackage pack = (EPackage) resource.getContents().get(0);
 		doResolveAllReferences(pack);
-		assertEquals(101, resourceSet.getResources().size());
+		assertEquals(EXPECTATION, resourceSet.getResources().size());
 	}
 	
 	@Ignore @Test public void testMultiThreaded() throws InterruptedException {
@@ -119,7 +128,7 @@ public class ConcurrentAccessTest extends Assert {
 		resourceSet.getResources().add(resource);
 		boolean wasOk = resolveAllReferencesMultithreaded((EPackage) resource.getContents().get(0));
 		if (wasOk)
-			assertFalse(101 == resourceSet.getResources().size());
+			assertFalse(EXPECTATION == resourceSet.getResources().size());
 		assertFalse("unresolvedProxy", wasOk);
 	}
 	
@@ -127,7 +136,25 @@ public class ConcurrentAccessTest extends Assert {
 		ResourceSet resourceSet = new SynchronizedXtextResourceSet();
 		resourceSet.getResources().add(resource);
 		boolean wasOk = resolveAllReferencesMultithreaded((EPackage) resource.getContents().get(0));
-		assertEquals(101, resourceSet.getResources().size());
+		assertEquals(EXPECTATION, resourceSet.getResources().size());
+		assertTrue("unresolvedProxy", wasOk);
+	}
+	
+	@Test public void testMultiThreadedParallel() throws InterruptedException {
+		ResourceSet resourceSet = new ParallelResourceSet(pools);
+		resourceSet.getResources().add(resource);
+		boolean wasOk = resolveAllReferencesMultithreaded((EPackage) resource.getContents().get(0));
+		assertEquals(EXPECTATION, resourceSet.getResources().size());
+		assertTrue("unresolvedProxy", wasOk);
+	}
+	
+	@Test public void testMultiThreadedParallelOptimized() throws InterruptedException {
+		ParallelResourceSet resourceSet = new ParallelResourceSet(pools);
+		resourceSet.getResources().add(resource);
+		List<Resource> resourceList = Lists.newArrayList(resource, resource, resource);
+		List<Boolean> result = resourceSet.processResources(resourceList, r->doResolveAllReferences((EPackage)r.getContents().get(0)));
+		boolean wasOk = result.stream().allMatch(failed->!failed);
+		assertEquals(EXPECTATION, resourceSet.getResources().size());
 		assertTrue("unresolvedProxy", wasOk);
 	}
 	
@@ -136,7 +163,7 @@ public class ConcurrentAccessTest extends Assert {
 		resourceSet.getResources().add(resource);
 		boolean wasOk = resolveAllReferencesStateAccess((EPackage) resource.getContents().get(0));
 		if (wasOk)
-			assertFalse(101 == resourceSet.getResources().size());
+			assertFalse(EXPECTATION == resourceSet.getResources().size());
 		assertFalse("unresolvedProxy", wasOk);
 	}
 	
@@ -144,7 +171,7 @@ public class ConcurrentAccessTest extends Assert {
 		ResourceSet resourceSet = new SynchronizedXtextResourceSet();
 		resourceSet.getResources().add(resource);
 		boolean wasOk = resolveAllReferencesStateAccess((EPackage) resource.getContents().get(0));
-		assertEquals(101, resourceSet.getResources().size());
+		assertEquals(EXPECTATION, resourceSet.getResources().size());
 		assertTrue("unresolvedProxy or concurrent modification or no such element", wasOk);
 	}
 	
@@ -215,6 +242,55 @@ public class ConcurrentAccessTest extends Assert {
 		assertEquals(2500, resources.size());
 		assertEquals(2500, resourceSet.getURIResourceMap().size());
 	}
+	
+	@Test public void testMultiThreadedParallelListAccess() throws InterruptedException {
+		XtextResourceSet resourceSet = new ParallelResourceSet(pools);
+		final List<Resource> resources = resourceSet.getResources();
+		List<List<Resource>> resourcesToAdd = Lists.newArrayList();
+		for(int i = 0; i < 5; i++) {
+			List<Resource> threadList = Lists.newArrayList();
+			for(int j = 0; j < 500; j++) {
+				threadList.add((new ResourceImpl(URI.createURI("file:/" + i + "_" + j + ".xmi"))));
+			}
+			resourcesToAdd.add(threadList);
+		}
+		List<Thread> threads = Lists.newArrayList();
+		for (int i = 0; i < 5; i++) {
+			final List<Resource> addUs = resourcesToAdd.get(i);
+			threads.add(new Thread() {
+				@Override
+				public void run() {
+					for(Resource addMe: addUs) {
+						resources.add(addMe);
+					}
+				}
+			});
+		}
+		for (Thread thread : threads) {
+			thread.start();
+		}
+
+		for (Thread thread : threads) {
+			thread.join();
+		}
+		assertEquals(2500, resources.size());
+		assertEquals(2500, resourceSet.getURIResourceMap().size());
+	}
+	
+	@Test public void testMultiThreadedParallelListAccessOptimized() throws InterruptedException {
+		ParallelResourceSet resourceSet = new ParallelResourceSet(pools);
+		final List<Resource> resources = resourceSet.getResources();
+		List<Resource> resourcesToAdd = Lists.newArrayList();
+		for(int i = 0; i < 5; i++) {
+			for(int j = 0; j < 500; j++) {
+				resourcesToAdd.add((new ResourceImpl(URI.createURI("file:/" + i + "_" + j + ".xmi"))));
+			}
+		}
+		resourceSet.processResources(resourcesToAdd, r->resources.add(r));
+		
+		assertEquals(2500, resources.size());
+		assertEquals(2500, resourceSet.getURIResourceMap().size());
+	}
 
 	/**
 	 * @return <code>true</code> if everything was ok.
@@ -239,7 +315,8 @@ public class ConcurrentAccessTest extends Assert {
 		for (Thread thread : threads) {
 			thread.join();
 		}
-		return !wasExceptionOrProxy.get();
+		boolean result = !wasExceptionOrProxy.get();
+		return result;
 	}
 	
 	/**
@@ -285,15 +362,21 @@ public class ConcurrentAccessTest extends Assert {
 			for(EAnnotation annotation: pack.getEAnnotations()) {
 				EList<EObject> references = annotation.getReferences();
 				for(EObject reference: references) {
-					if (reference == null)
+					if (reference == null) {
 						failed = true;
-					else if (reference.eIsProxy())
+						System.out.println("REFERENCE IS NULL");
+					}
+					else if (reference.eIsProxy()) {
 						failed = true;
+						System.out.println("REFERENCE IS PROXY");
+					}
 				}
 			}
 		} catch(ConcurrentModificationException e) {
+			e.printStackTrace();
 			failed = true;
 		} catch(NoSuchElementException e) {
+			e.printStackTrace();
 			failed = true;
 		}
 		return failed;

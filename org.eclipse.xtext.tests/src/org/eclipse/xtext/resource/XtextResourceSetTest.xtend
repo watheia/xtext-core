@@ -18,6 +18,11 @@ import org.junit.Test
 
 import static org.junit.Assert.*
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl.ResourceLocator
+import org.junit.Before
+import org.junit.After
+import org.junit.runner.RunWith
+import org.junit.runners.Suite
+import org.junit.runners.Suite.SuiteClasses
 
 /**
  * @author Sven Efftinge - Initial contribution and API
@@ -351,7 +356,7 @@ class SynchronizedXtextResourceSetTest extends AbstractXtextResourceSetTest {
 	
 	@Test
 	def void testSynchronization() {
-		val resourceSet = createEmptyResourceSet as SynchronizedXtextResourceSet
+		val resourceSet = createEmptyResourceSet
 		val Resource.Factory nullFactory = [ uri | 
 			val result = new NullResource
 			result.URI = uri
@@ -382,5 +387,30 @@ class SynchronizedXtextResourceSetTest extends AbstractXtextResourceSetTest {
 		assertEquals(resourceSet.resources.map[ #[getURI, resourceSet.URIConverter.normalize(URI) ] ].flatten.toSet, resourceSet.URIResourceMap.keySet)
 		assertEquals(resourceSet.resources.map[ getURI.toString ].toList.sort.join('\n'), resourceSet.getNormalizationMap.keySet.map[toString].toList.sort.join('\n'))
 	}
+	
+}
+
+class ParallelXtextResourceSetTest extends SynchronizedXtextResourceSetTest {
+	ThreadPools pools;
+	
+	@Before
+	def void initPools() {
+		pools = new ThreadPools()
+	}
+	
+	@After
+	def void discardPools() {
+		pools.stop();
+		pools = null;
+	}
+	
+	override protected createEmptyResourceSet() {
+		return new ParallelResourceSet(pools)
+	}
+}
+
+@SuiteClasses(SynchronizedXtextResourceSetTest, ParallelXtextResourceSetTest, XtextResourceSetTest)
+@RunWith(Suite)
+class AllResourceSetTests {
 	
 }
