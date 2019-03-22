@@ -57,3 +57,7 @@ task clean(type: Delete) {
 	description 'Deletes the local repositories.'
 	delete 'build'
 }
+
+tasks.withType(Test) {
+	maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+}
