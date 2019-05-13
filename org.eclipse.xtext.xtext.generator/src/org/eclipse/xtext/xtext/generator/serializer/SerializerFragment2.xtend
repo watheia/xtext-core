@@ -394,11 +394,13 @@ import static extension org.eclipse.xtext.xtext.generator.util.GenModelUtil2.*
 		val states = c.linearListOfMandatoryAssignments
 		'''
 			/**
+			 * <pre>{@code 
 			 * Contexts:
 			 *     «c.contexts.sort.join("\n").replaceAll("\\n","\n*     ")»
 			 *
 			 * Constraint:
 			 *     «IF c.body === null»{«c.type.name»}«ELSE»«c.body.toString.replaceAll("\\n","\n*     ")»«ENDIF»
+			 * }</pre>
 			 */
 			protected void sequence_«c.simpleName»(«ISerializationContext» context, «c.type» semanticObject) {
 				«IF states !== null»

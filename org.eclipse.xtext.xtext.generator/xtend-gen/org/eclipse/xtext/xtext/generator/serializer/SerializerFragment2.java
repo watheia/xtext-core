@@ -991,6 +991,9 @@ public class SerializerFragment2 extends AbstractStubGeneratingFragment {
           _builder.append("/**");
           _builder.newLine();
           _builder.append(" ");
+          _builder.append("* <pre>{@code ");
+          _builder.newLine();
+          _builder.append(" ");
           _builder.append("* Contexts:");
           _builder.newLine();
           _builder.append(" ");
@@ -1020,6 +1023,9 @@ public class SerializerFragment2 extends AbstractStubGeneratingFragment {
             }
           }
           _builder.newLineIfNotEmpty();
+          _builder.append(" ");
+          _builder.append("* }</pre>");
+          _builder.newLine();
           _builder.append(" ");
           _builder.append("*/");
           _builder.newLine();
