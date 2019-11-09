@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, 2016 itemis AG (http://www.itemis.eu) and others.
+ * Copyright (c) 2015, 2019 itemis AG (http://www.itemis.eu) and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -46,7 +46,7 @@ public class GradleBuildFile extends TextFile {
           Set<? extends ProjectDescriptor> _upstreamProjects = this.getProject().getUpstreamProjects();
           for(final ProjectDescriptor p : _upstreamProjects) {
             _builder.append("\t");
-            _builder.append("compile project(\':");
+            _builder.append("api project(\':");
             String _name = p.getName();
             _builder.append(_name, "\t");
             _builder.append("\')");

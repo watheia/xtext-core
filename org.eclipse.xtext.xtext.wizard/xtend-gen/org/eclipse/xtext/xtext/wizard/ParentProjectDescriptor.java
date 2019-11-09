@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, 2018 itemis AG (http://www.itemis.eu) and others.
+ * Copyright (c) 2015, 2019 itemis AG (http://www.itemis.eu) and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -192,13 +192,13 @@ public class ParentProjectDescriptor extends ProjectDescriptor {
       _builder.append("\t");
       _builder.newLine();
       _builder.append("\t");
-      _builder.append("apply plugin: \'java\'");
+      _builder.append("apply plugin: \'java-library\'");
       _builder.newLine();
       _builder.append("\t");
       _builder.append("dependencies {");
       _builder.newLine();
       _builder.append("\t\t");
-      _builder.append("compile platform(\"org.eclipse.xtext:xtext-dev-bom:${xtextVersion}\")");
+      _builder.append("api platform(\"org.eclipse.xtext:xtext-dev-bom:${xtextVersion}\")");
       _builder.newLine();
       _builder.append("\t");
       _builder.append("}");

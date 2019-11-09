@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 itemis AG (http://www.itemis.eu) and others.
+ * Copyright (c) 2015, 2019 itemis AG (http://www.itemis.eu) and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -98,9 +98,9 @@ class ParentProjectDescriptor extends ProjectDescriptor {
 						«ENDIF»
 					}
 					
-					apply plugin: 'java'
+					apply plugin: 'java-library'
 					dependencies {
-						compile platform("org.eclipse.xtext:xtext-dev-bom:${xtextVersion}")
+						api platform("org.eclipse.xtext:xtext-dev-bom:${xtextVersion}")
 					}
 
 					apply plugin: 'org.xtext.xtend'
