@@ -2,22 +2,22 @@ ext.title = 'Xtext Runtime Bundle'
 description = 'Core component of Xtext.'
 
 dependencies {
-	compile project(':org.eclipse.xtext.util')
-	compile "org.eclipse.xtend:org.eclipse.xtend.lib:$versions.xtext"
-	compile 'log4j:log4j'
-	compile 'org.eclipse.platform:org.eclipse.equinox.common'
+	api project(':org.eclipse.xtext.util')
+	api "org.eclipse.xtend:org.eclipse.xtend.lib:$versions.xtext"
+	api 'log4j:log4j'
+	api 'org.eclipse.platform:org.eclipse.equinox.common'
 	// remove me, once the following is fixed : https://bugs.eclipse.org/bugs/show_bug.cgi?id=510504
-	compile 'org.eclipse.platform:org.eclipse.osgi'
-	compile 'org.eclipse.emf:org.eclipse.emf.common'
-	compile 'org.eclipse.emf:org.eclipse.emf.ecore.xmi'
-	compile 'com.google.inject:guice'
-	compile 'org.antlr:antlr-runtime'
-	optional 'org.eclipse.platform:org.eclipse.core.runtime'
-	optional 'org.eclipse.platform:org.eclipse.equinox.registry'
-	optional 'org.eclipse.emf:org.eclipse.emf.mwe.utils'
-	optional 'org.eclipse.xpand:org.eclipse.xtend'
-	optional 'org.eclipse.xpand:org.eclipse.xtend.typesystem.emf'
-	optional 'org.ow2.asm:asm-commons'
+	api 'org.eclipse.platform:org.eclipse.osgi'
+	api 'org.eclipse.emf:org.eclipse.emf.common'
+	api 'org.eclipse.emf:org.eclipse.emf.ecore.xmi'
+	api 'com.google.inject:guice'
+	api 'org.antlr:antlr-runtime'
+	mavenOptionalApi 'org.eclipse.platform:org.eclipse.core.runtime'
+	mavenOptionalApi 'org.eclipse.platform:org.eclipse.equinox.registry'
+	mavenOptionalApi 'org.eclipse.emf:org.eclipse.emf.mwe.utils'
+	mavenOptionalApi 'org.eclipse.xpand:org.eclipse.xtend'
+	mavenOptionalApi 'org.eclipse.xpand:org.eclipse.xtend.typesystem.emf'
+	mavenOptionalApi 'org.ow2.asm:asm-commons'
 }
 
 sourceSets.main {

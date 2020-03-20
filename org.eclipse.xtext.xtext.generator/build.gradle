@@ -2,13 +2,13 @@ ext.title = 'Xtext Generator'
 description = 'Generator for infrastructure of Xtext languages (supersedes org.eclipse.xtext.generator).'
 
 dependencies {
-	compile project(':org.eclipse.xtext')
-	compile 'org.eclipse.emf:org.eclipse.emf.codegen'
-	compile 'org.eclipse.emf:org.eclipse.emf.codegen.ecore'
-	compile 'org.eclipse.emf:org.eclipse.emf.mwe.utils'
-	compile 'org.eclipse.emf:org.eclipse.emf.mwe2.lib'
-	compile 'com.ibm.icu:icu4j'
-	compile 'org.eclipse.platform:org.eclipse.equinox.common'
-	optional 'org.eclipse.platform:org.eclipse.core.runtime'
-	optional 'org.eclipse.jdt:org.eclipse.jdt.core'
+	api project(':org.eclipse.xtext')
+	api 'org.eclipse.emf:org.eclipse.emf.codegen'
+	api 'org.eclipse.emf:org.eclipse.emf.codegen.ecore'
+	api 'org.eclipse.emf:org.eclipse.emf.mwe.utils'
+	api 'org.eclipse.emf:org.eclipse.emf.mwe2.lib'
+	api 'com.ibm.icu:icu4j'
+	api 'org.eclipse.platform:org.eclipse.equinox.common'
+	mavenOptionalApi 'org.eclipse.platform:org.eclipse.core.runtime'
+	mavenOptionalApi 'org.eclipse.jdt:org.eclipse.jdt.core'
 }

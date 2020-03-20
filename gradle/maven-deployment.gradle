@@ -7,6 +7,8 @@ publishing {
     publications {
         LocalMavenRepo(MavenPublication) {
             from components.java
+            suppressPomMetadataWarningsFor("mavenOptionalApiElements")
+            suppressPomMetadataWarningsFor("mavenOptionalRuntimeElements")
             artifact sourcesJar
             if (!noJavaDoc) {
                 artifact javadocJar
