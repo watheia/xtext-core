@@ -56,7 +56,9 @@ import org.eclipse.xtext.scoping.impl.ImportUriGlobalScopeProvider;
 import org.eclipse.xtext.scoping.impl.SimpleLocalScopeProvider;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.serializer.sequencer.BacktrackingSemanticSequencer;
+import org.eclipse.xtext.serializer.sequencer.ContextFinder;
 import org.eclipse.xtext.serializer.sequencer.GenericSequencer;
+import org.eclipse.xtext.serializer.sequencer.IContextFinder;
 import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
 import org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding;
 import org.eclipse.xtext.validation.CancelableDiagnostician;
@@ -68,6 +70,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.Provider;
+import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
@@ -256,4 +259,9 @@ public abstract class DefaultRuntimeModule extends AbstractGenericModule {
 		binder.bind(new TypeLiteral<ImmutableList<IsAffectedExtension>>() {}).toProvider(AllIsAffectedExtensions.class);
 		binder.bind(Key.get(IsAffectedExtension.class, Names.named("IsAffectedExtension.UniqueNames"))).to(INamesAreUniqueValidationHelper.ContextProvider.class);
 	}
+//	
+//	public void configureIContextFinder(Binder b) {
+//		b.bind(ContextFinder.class).asEagerSingleton();
+//		b.bind(IContextFinder.class).to(ContextFinder.class); // this this a singleton too?
+//	}
 }
